@@ -4,6 +4,31 @@ Plataforma web para una academia de **talleres presenciales de un día en Bogot�
 
 > Proyecto de ingeniería full stack. Los requisitos, supuestos y preguntas abiertas al cliente están en [`docs/00-discovery/analisis.md`](docs/00-discovery/analisis.md). Cada decisión importante tiene un ADR en [`docs/adr/`](docs/adr).
 
+[![CI](https://github.com/4GeeksAcademy/ejercicio-proyecto-desde-cero/actions/workflows/ci.yml/badge.svg)](https://github.com/4GeeksAcademy/ejercicio-proyecto-desde-cero/actions/workflows/ci.yml)
+
+## Demo en vivo
+**https://tallerya-web.onrender.com** · API: https://tallerya-api.onrender.com/docs (si la documentación está habilitada)
+
+> Está en el plan gratuito de Render: **se duerme tras ~15 min sin visitas** y la primera carga puede tardar hasta un minuto. Los pagos son **simulados** (no se cobra nada) y no se envían correos.
+
+| Catálogo (ES/EN, filtros, disponibilidad) | Ficha del curso (SEO, JSON-LD) | Móvil |
+|---|---|---|
+| ![Catálogo](docs/img/catalogo.png) | ![Curso](docs/img/curso.png) | ![Móvil](docs/img/movil.png) |
+
+## Arquitectura
+
+```mermaid
+flowchart LR
+    U[Navegador / buscador / asistente IA] -->|HTTPS| W[Next.js<br/>TypeScript · Tailwind · i18n]
+    W -->|/api/* proxy, cookies same-site| A[FastAPI<br/>monolito modular]
+    P[Pasarela de pagos] -->|webhook firmado| A
+    A --> D[(PostgreSQL<br/>public + analytics)]
+    A -->|outbox transaccional| K[Worker<br/>caducidad · avisos · analítica]
+    K --> D
+    A -. trazas y métricas .-> O[OpenTelemetry → Grafana]
+    W -. llms.txt · sitemap · JSON-LD .-> U
+```
+
 ## Estado
 
 | Hito | Estado |
@@ -13,7 +38,7 @@ Plataforma web para una academia de **talleres presenciales de un día en Bogot�
 | 8 Frontend (i18n, SEO, a11y, admin) · 12 Tests (unit/integración/E2E) | ✅ |
 | 10 Telemetría (OpenTelemetry: trazas + métricas + logs con `trace_id`) · 11 Pipeline de analítica | ✅ (verificado hasta Tempo/Prometheus) |
 | 15 Asistente IA | 🟡 capa de herramientas de solo lectura lista y probada; **falta integrar el modelo** ([ADR-0007](docs/adr/0007-asistente-ia.md)) |
-| 14 CI | 🟡 definido en `.github/workflows/ci.yml`, **aún no ejecutado en GitHub** (cada paso se probó en local) |
+| 14 CI | ✅ **en verde en GitHub** (backend, frontend, seguridad y Docker) |
 | 16 Despliegue en Render (`render.yaml`, probado simulándolo en local) | ✅ listo para desplegar: [docs/despliegue.md](docs/despliegue.md) |
 | 13 Rendimiento: auditoría medida · dominio propio y pagos reales | ⏳ pendientes |
 

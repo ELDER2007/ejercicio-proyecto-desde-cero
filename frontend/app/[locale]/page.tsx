@@ -8,6 +8,9 @@ import { buttonClass } from "@/components/ui/Button";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { type Loc, organizationLd, pageAlternates } from "@/lib/seo";
 
+// Dinámica: si se generara en el build (la API aún no existe) quedaría congelada sin cursos. Los datos se cachean 30 s en el fetch.
+export const dynamic = "force-dynamic";
+
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "seo" });
@@ -46,6 +49,8 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
               <li key={c.id}><CourseCard course={c} /></li>
             ))}
           </ul>
+        ) : courses === null ? (
+          <p role="status" className="mt-4 text-muted">{t("unavailable")}</p>
         ) : (
           <p className="mt-4 text-muted">{t("empty")}</p>
         )}

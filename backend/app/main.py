@@ -14,6 +14,7 @@ from app.core.logging import configure_logging
 from app.core.middleware import RequestContextMiddleware, SecurityHeadersMiddleware
 from app.core.telemetry import setup_telemetry
 from app.modules.admin import router as admin_router
+from app.modules.assistant import router as assistant_router
 from app.modules.auth import router as auth_router
 from app.modules.bookings import admin_router as bookings_admin_router
 from app.modules.bookings import router as bookings_router
@@ -75,6 +76,7 @@ def create_app() -> FastAPI:
     api_v1.include_router(bookings_admin_router.router)
     api_v1.include_router(payments_router.router)
     api_v1.include_router(notifications_router.router)
+    api_v1.include_router(assistant_router.router)
     api_v1.include_router(payments_router.admin_router)
     if payments_router.dev_enabled():
         api_v1.include_router(payments_router.dev_router)

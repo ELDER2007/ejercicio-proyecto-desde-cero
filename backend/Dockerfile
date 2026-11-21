@@ -9,6 +9,8 @@ RUN --mount=type=cache,target=/root/.cache/uv uv sync --frozen --no-dev --no-ins
 
 FROM python:3.12-slim AS runtime
 ENV PYTHONUNBUFFERED=1 PYTHONDONTWRITEBYTECODE=1 PATH="/app/.venv/bin:$PATH"
+# Parches de seguridad del sistema base (p. ej. zlib) publicados después de que se construyera la imagen python.
+RUN apt-get update && apt-get upgrade -y --no-install-recommends && rm -rf /var/lib/apt/lists/*
 RUN useradd --system --uid 10001 --create-home app
 WORKDIR /app
 COPY --from=builder /app/.venv /app/.venv

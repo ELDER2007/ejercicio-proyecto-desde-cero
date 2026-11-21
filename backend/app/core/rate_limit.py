@@ -63,6 +63,11 @@ def rate_limit(name: str, limit: int | Callable[[], int], window_seconds: int) -
 _registry: list[SlidingWindowLimiter] = []
 
 
+def register_limiter(limiter: SlidingWindowLimiter) -> SlidingWindowLimiter:
+    _registry.append(limiter)
+    return limiter
+
+
 def reset_all_limiters() -> None:
     for lim in _registry:
         lim.reset()

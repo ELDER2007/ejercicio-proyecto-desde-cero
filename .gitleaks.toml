@@ -1,0 +1,12 @@
+# Configuración del escáner de secretos (gitleaks). Se usa junto con las reglas por defecto.
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Contraseñas FALSAS de tests/E2E y valores de ejemplo (no son secretos reales)"
+paths = [
+  '''backend/tests/''',
+  '''frontend/e2e/''',
+  '''frontend/tests/''',
+  '''\.env\.example$''',
+]

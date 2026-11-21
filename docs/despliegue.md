@@ -42,6 +42,16 @@ El proyecto está preparado para **Render** con un solo archivo, [`render.yaml`]
 - El **worker va dentro de la API** (`EMBEDDED_WORKER=true`) para no pagar un worker aparte. Si la API duerme, las tareas (caducar reservas, avisos) esperan, pero **las plazas siguen siendo correctas**: la disponibilidad ignora las reservas vencidas aunque el worker no haya corrido.
 - Sin `SMTP_HOST` no se envían correos; los avisos se ven en "Notificaciones" dentro de la cuenta.
 
+## Activar el asistente de IA (opcional)
+El asistente (botón ✨ "Pregúntale al asistente") usa Claude con herramientas de **solo lectura**: busca cursos reales y da su URL; **no reserva ni paga**. Sin clave, **no aparece** y el resto de la web funciona igual.
+
+1. Crea una clave en **console.anthropic.com → API Keys** (empieza por `sk-ant-`). Cuesta dinero por uso: pon un límite de gasto en tu cuenta.
+2. En Render, en **`tallerya-api` → Environment**, rellena `ANTHROPIC_API_KEY` con la clave y guarda (la API se reinicia sola).
+3. Abre la web: debe aparecer el botón. Prueba: *"Quiero algo creativo este fin de semana"*.
+
+**Coste y control.** Cada mensaje consulta el catálogo y responde con unos pocos miles de tokens. Hay dos topes: **8 mensajes por minuto por visitante** y **300 mensajes al día en total** (`ASSISTANT_DAILY_LIMIT`). Con el modelo por defecto (`claude-opus-5-5`, $4/$20 por millón de tokens) el peor caso diario son unos pocos dólares. Para gastar bastante menos, cambia `ASSISTANT_MODEL` a `claude-haiku-5-5`.
+La clave **nunca** va en el repositorio: solo en las variables de entorno del servicio.
+
 ## Opción B: web en Vercel + API y base de datos en Render
 Vercel no puede alojar PostgreSQL ni el worker; por eso el backend va a Render igualmente.
 1. En Render despliega el Blueprint y **borra el servicio `tallerya-web`** del `render.yaml` (o suspéndelo).

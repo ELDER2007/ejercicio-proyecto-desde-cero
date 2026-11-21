@@ -54,7 +54,8 @@
     "step3d": "Payment happens on the provider's page; we never see your card.",
     "step4": "Get your confirmation",
     "step4d": "We confirm your participation and send you your QR code.",
-    "empty": "New workshops are coming soon."
+    "empty": "New workshops are coming soon.",
+    "unavailable": "We are loading the workshops… reload the page in a few seconds."
   },
   "courses": {
     "title": "Courses & workshops",
@@ -199,7 +200,12 @@
     "EXTERNAL_SERVICE_ERROR": "The payment service is unavailable. Please try again shortly.",
     "INVALID_RESET_TOKEN": "The link is not valid or has expired.",
     "ACTIVE_BOOKINGS_EXIST": "You have active bookings. Cancel them or wait until they finish.",
-    "INVALID_STATE_TRANSITION": "That action isn't allowed in the current state."
+    "INVALID_STATE_TRANSITION": "That action isn't allowed in the current state.",
+    "wakingTitle": "The server is waking up",
+    "wakingBody": "This demo runs on a free server that sleeps when idle. Wait a few seconds and press “Try again”.",
+    "retry": "Try again",
+    "ASSISTANT_UNAVAILABLE": "The assistant is not available right now. Please try again in a moment.",
+    "ASSISTANT_DISABLED": "The assistant is not available at the moment."
   },
   "account": {
     "title": "My account",
@@ -309,5 +315,20 @@
   "notFound": {
     "title": "Page not found",
     "body": "The page you are looking for doesn't exist or was moved."
+  },
+  "assistant": {
+    "title": "Tallerya assistant",
+    "open": "Ask the assistant",
+    "close": "Close the assistant",
+    "welcome": "Hi! Tell me what you'd like to learn and I'll suggest real Tallerya workshops.",
+    "s1": "I want something creative this weekend",
+    "s2": "Which cooking workshops are there?",
+    "s3": "Workshops under 150,000 pesos",
+    "placeholder": "Type your question…",
+    "send": "Send",
+    "thinking": "Looking for workshops…",
+    "seats": "{count, plural, one {# spot left} other {# spots left}}",
+    "full": "sold out",
+    "disclaimer": "I'm an AI and can make mistakes. Always check on the course page. I can't book or pay for you."
   }
 }

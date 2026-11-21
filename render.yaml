@@ -53,6 +53,12 @@ services:
         sync: false
       - key: BOOTSTRAP_OWNER_PASSWORD
         sync: false
+      # Asistente de IA (OPCIONAL). Sin una clave real (sk-ant-...) el asistente queda desactivado y la web funciona igual.
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      # Modelo del asistente. Más barato: claude-haiku-5-5 (ver docs/despliegue.md).
+      - key: ASSISTANT_MODEL
+        value: claude-opus-5-5
       # URL pública del frontend (para enlaces en correos y QR). Ajusta si Render añadió un sufijo al nombre.
       - key: FRONTEND_URL
         value: https://tallerya-web.onrender.com

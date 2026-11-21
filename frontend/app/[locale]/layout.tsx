@@ -8,9 +8,10 @@ import { AuthProvider } from "@/components/auth/AuthProvider";
 import { AlternatesProvider } from "@/components/layout/alternates";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
+import { AssistantChat } from "@/components/assistant/AssistantChat";
 import "../globals.css";
 
-const CLIENT_NAMESPACES = ["common", "nav", "course", "booking", "auth", "errors", "account", "admin", "fakePay"];
+const CLIENT_NAMESPACES = ["assistant", "common", "nav", "course", "booking", "auth", "errors", "account", "admin", "fakePay"];
 
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
@@ -61,6 +62,7 @@ export default async function LocaleLayout({
                 {children}
               </main>
               <Footer />
+              <AssistantChat />
             </AlternatesProvider>
           </AuthProvider>
         </NextIntlClientProvider>

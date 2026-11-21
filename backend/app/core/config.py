@@ -54,6 +54,16 @@ class Settings(BaseSettings):
     bootstrap_owner_password: str = ""
     seed_demo: bool = False
 
+    # Asistente de IA (Claude). Sin clave el asistente queda DESACTIVADO (la web funciona igual).
+    anthropic_api_key: str = ""
+    assistant_model: str = (
+        "claude-opus-5-5"  # configurable: p. ej. claude-sonnet-5-5 o claude-haiku-5-5 para gastar menos
+    )
+    assistant_daily_limit: int = (
+        300  # tope global de mensajes al día (control de coste); se reinicia al reiniciar el servicio
+    )
+    assistant_ip_limit_per_minute: int = 8
+
     # Email (Mailpit en desarrollo; vacío = no enviar correos, solo avisos dentro de la web)
     smtp_host: str = "localhost"
     smtp_port: int = 1025

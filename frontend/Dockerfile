@@ -21,7 +21,9 @@ ARG API_INTERNAL_URL=http://backend:8000
 # También en RUNTIME: los Server Components llaman al backend desde el contenedor.
 ENV NODE_ENV=production NEXT_TELEMETRY_DISABLED=1 PORT=3000 HOSTNAME=0.0.0.0 \
     NEXT_PUBLIC_SITE_URL=$NEXT_PUBLIC_SITE_URL API_INTERNAL_URL=$API_INTERNAL_URL
-RUN addgroup -S app && adduser -S app -G app
+RUN apk upgrade --no-cache && addgroup -S app && adduser -S app -G app
+# En ejecución solo hace falta `node`: sin npm/corepack hay menos superficie de ataque y desaparecen sus dependencias vulnerables.
+RUN rm -rf /usr/local/lib/node_modules/npm /usr/local/lib/node_modules/corepack /usr/local/bin/npm /usr/local/bin/npx /usr/local/bin/corepack
 COPY --from=build --chown=app:app /app/.next/standalone ./
 COPY --from=build --chown=app:app /app/.next/static ./.next/static
 USER app

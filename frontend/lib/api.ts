@@ -38,10 +38,29 @@ async function toError(res: Response): Promise<ApiError> {
 
 // ---------------------------------------------------------------- servidor
 
+const RETRYABLE_STATUS = new Set([502, 503, 504]);
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+/**
+ * GET desde el servidor de Next. Si la API está "despertando" (hosting gratuito que se duerme) responde 502/503/504 o
+ * tarda: reintentamos unos segundos antes de rendirnos, para que el visitante vea la página y no un error.
+ */
 export async function serverGet<T>(path: string, revalidate = 30): Promise<T> {
-  const res = await fetch(`${apiBase()}/api/v1${path}`, { next: { revalidate } });
-  if (!res.ok) throw await toError(res);
-  return (await res.json()) as T;
+  const attempts = 3;
+  let last: unknown;
+  for (let i = 0; i < attempts; i++) {
+    try {
+      const res = await fetch(`${apiBase()}/api/v1${path}`, { next: { revalidate }, signal: AbortSignal.timeout(25_000) });
+      if (res.ok) return (await res.json()) as T;
+      if (!RETRYABLE_STATUS.has(res.status)) throw await toError(res); // 404, 422... son respuestas reales: no se reintentan
+      last = await toError(res);
+    } catch (e) {
+      if (e instanceof ApiError && !RETRYABLE_STATUS.has(e.status)) throw e;
+      last = e; // red caída / timeout / API despertando
+    }
+    if (i < attempts - 1) await sleep(3_000 * (i + 1));
+  }
+  throw last;
 }
 
 // ---------------------------------------------------------------- navegador

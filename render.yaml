@@ -20,8 +20,9 @@ services:
     plan: free
     dockerfilePath: ./backend/Dockerfile
     dockerContext: ./backend
-    # Orden: migraciones -> datos iniciales (idempotente) -> servidor
-    dockerCommand: sh -c "alembic upgrade head && python -m app.bootstrap && exec uvicorn app.main:app --host 0.0.0.0 --port $PORT"
+    # Orden: migraciones -> datos iniciales (idempotente) -> servidor (ver backend/start.sh).
+    # Sin comillas ni "&&": Render las interpretaba mal y fallaba con "not found".
+    dockerCommand: sh /app/start.sh
     healthCheckPath: /ready
     envVars:
       - key: DATABASE_URL

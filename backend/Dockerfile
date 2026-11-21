@@ -15,6 +15,7 @@ COPY --from=builder /app/.venv /app/.venv
 COPY app ./app
 COPY migrations ./migrations
 COPY alembic.ini ./
+COPY start.sh ./start.sh
 USER app
 EXPOSE 8000
 # Render (y otros) inyectan PORT; en local es 8000.

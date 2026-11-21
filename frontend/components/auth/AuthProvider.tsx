@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
-import { api, ApiError } from "@/lib/api";
+import { api, ApiError, hasSessionHint } from "@/lib/api";
 import type { User } from "@/lib/types";
 
 type AuthState = {
@@ -30,9 +30,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   useEffect(() => {
-    // Comprobación inicial de sesión (la respuesta llega de forma asíncrona).
+    // Comprobación inicial de sesión. Sin cookie de sesión (visitante anónimo) NO se llama al servidor:
+    // así no hay 401 inútiles ni ruido en la consola.
     let live = true;
-    api<User>("/users/me")
+    const check: Promise<User | null> = hasSessionHint() ? api<User>("/users/me") : Promise.resolve(null);
+    check
       .then((u) => live && setUser(u))
       .catch(() => live && setUser(null))
       .finally(() => live && setLoading(false));

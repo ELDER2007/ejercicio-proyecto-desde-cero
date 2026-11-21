@@ -1,9 +1,22 @@
 import { getLocale, getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
+import { CourseImage } from "@/components/courses/CourseImage";
+import { isOptimizableImage } from "@/lib/imageHosts";
 import type { CourseSummary } from "@/lib/types";
 import { formatDateShort, formatMoney, formatTimeRange } from "@/lib/format";
 
-export async function CourseCard({ course }: { course: CourseSummary }) {
+export async function CourseCard({
+  course,
+  headingLevel = 3,
+  priority = false,
+}: {
+  course: CourseSummary;
+  /** Nivel del título (2 en el catálogo, que ya tiene h1; 3 dentro de secciones con h2). */
+  headingLevel?: 2 | 3;
+  /** Imagen visible al cargar (arriba del todo): se carga ya y con prioridad alta en vez de en diferido. */
+  priority?: boolean;
+}) {
+  const Heading = headingLevel === 2 ? "h2" : "h3";
   const t = await getTranslations("course");
   const locale = await getLocale();
   const spots = course.is_full ? (
@@ -17,21 +30,26 @@ export async function CourseCard({ course }: { course: CourseSummary }) {
   return (
     <article className="relative flex flex-col overflow-hidden rounded-xl border border-line bg-surface-2 shadow-sm transition hover:shadow-md">
       {course.cover_image_url ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img src={course.cover_image_url} alt={course.cover_image_alt ?? ""} loading="lazy" className="aspect-video w-full object-cover object-[50%_30%]" />
+        <CourseImage
+          src={course.cover_image_url}
+          alt={course.cover_image_alt ?? ""}
+          optimize={isOptimizableImage(course.cover_image_url)}
+          priority={priority}
+          sizes="(min-width: 1024px) 380px, (min-width: 640px) 45vw, 100vw"
+        />
       ) : (
         <div aria-hidden="true" className="flex aspect-video items-center justify-center bg-brand-soft text-5xl">🎨</div>
       )}
       <div className="flex flex-1 flex-col gap-2 p-4">
         <p className="text-xs font-semibold uppercase tracking-wide text-brand">{course.category.name}</p>
-        <h3 className="text-lg font-bold leading-snug">
+        <Heading className="text-lg font-bold leading-snug">
           <Link
             href={{ pathname: "/courses/[slug]", params: { slug: course.slug } }}
             className="after:absolute after:inset-0 hover:underline"
           >
             {course.name}
           </Link>
-        </h3>
+        </Heading>
         <p className="text-sm text-muted">{course.short_description}</p>
         <p className="mt-auto pt-2 text-sm">
           <time dateTime={course.starts_at}>{formatDateShort(course.starts_at, locale, course.timezone)}</time>

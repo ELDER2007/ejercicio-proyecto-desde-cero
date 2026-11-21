@@ -64,6 +64,12 @@ Vercel no puede alojar PostgreSQL ni el worker; por eso el backend va a Render i
 
 > `API_INTERNAL_URL` y `NEXT_PUBLIC_SITE_URL` se fijan al construir: cámbialas y vuelve a desplegar.
 
+## Cambiar datos y fotos sin tocar el código
+Con sesión de administrador: **Administración → Cursos → Editar**. Se pueden cambiar textos (ES/EN), fecha, capacidad, precio y la **foto** (se pega su dirección `https://…` y se ve una vista previa; vacía = quitar la foto). Los cambios se ven al instante en la web.
+- Solo se aceptan fotos por `https` y hay que describirlas (accesibilidad).
+- La foto se optimiza solo si su servidor está en `frontend/lib/imageHosts.ts` o en la variable `IMAGE_HOSTS`; si no, se muestra sin optimizar. Algunos sitios bloquean mostrar sus imágenes en otras webs: entonces se ve el recuadro de color (lo ideal es alojar la imagen en un sitio propio).
+- No se puede bajar la capacidad por debajo de las plazas ya ocupadas ni editar un curso cancelado. Cada cambio queda en auditoría (sin guardar las direcciones).
+
 ## Pasar de demo a producción real
 - Elegir proveedor de pagos y quitar `ALLOW_FAKE_PAYMENTS` / `PAYMENT_PROVIDER=fake` (la app **se niega a arrancar** en staging/producción con pagos simulados si no es una demo explícita).
 - Configurar `SMTP_*` (correo transaccional) y `APP_ENV=production`.

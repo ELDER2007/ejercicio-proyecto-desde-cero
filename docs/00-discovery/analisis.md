@@ -1,7 +1,6 @@
-# TALLERYA — Análisis profesional (HITO 0 · borrador para aprobación)
+# TALLERYA — Análisis profesional (HITO 0)
 
-> **Contexto.** Pediste un análisis completo ANTES de programar. Este documento es ese análisis (los 45 puntos, en tu orden). El repositorio solo contiene `prompt.md` y un commit inicial, así que no hay código previo que reutilizar.
-> **Al aprobar este plan:** guardo este texto como `docs/00-discovery/analisis.md` (solo documentación, sin código), y me detengo hasta que apruebes el HITO 0 y me digas cómo resuelves las preguntas del punto 12.
+> **Versión inicial del análisis (20-11-2026), con un anexo de actualización (21-11-2026).** El cuerpo de este documento es el análisis que se aprobó **antes** de programar; no se reescribe para que se vea el razonamiento original. El **Anexo A** (al final) recoge qué se construyó, qué decisiones cambiaron y qué resultados se midieron. Donde el cuerpo y el anexo discrepan, **manda el anexo**.
 > **Etiquetas** (regla 58): **[CLIENTE]** pedido expreso · **[REGLA]** derivada directamente · **[PROPUESTA]** mejora recomendada · **[TÉCNICO]** decisión de arquitectura · **[PENDIENTE]** requiere confirmación.
 
 ---
@@ -300,7 +299,7 @@ Monolito modular: un único backend desplegable, dominios con límites claros (A
 | ORM / migraciones | **SQLAlchemy 2.0 + Alembic** (psycopg 3) | Modelos y control de esquema | Modelado, revisión de migraciones | Borradores de migraciones |
 | BD | **PostgreSQL** | Transacciones, constraints, locks, índices | Diseño del esquema | Seeds, consultas repetitivas |
 | Auth | Propia: **argon2id**, JWT corto + refresh rotativo en cookie httpOnly | Identidad y sesiones | Flujo y seguridad | Tests de seguridad |
-| Jobs | **Cola respaldada en PostgreSQL** (p. ej. Procrastinate) en vez de Redis al inicio; alternativa Celery/Redis documentada en ADR | Tareas diferidas, reintentos, periódicas | Diseño de jobs idempotentes | Implementación y tests |
+| Jobs | **Outbox transaccional + worker con polling a PostgreSQL** (sin librería de colas ni Redis; ver ADR-0005 y Anexo A) | Tareas diferidas, reintentos, periódicas | Diseño de jobs idempotentes | Implementación y tests |
 | Observabilidad | **structlog** + **OpenTelemetry** SDK + Collector + Grafana (LGTM) | Logs, métricas, trazas correlacionados | Instrumentar operaciones clave | Configuración de compose/dashboards |
 | Calidad | pytest, Hypothesis, Playwright, Vitest, ruff, mypy, ESLint, Prettier | Tests y estilo | Casos críticos | Tests repetitivos |
 | Contenedores | Docker, Compose (+ Mailpit para emails de desarrollo) | Entorno reproducible | Entender cada servicio | Dockerfiles multi-stage |
@@ -530,3 +529,57 @@ Con tu "aprobado" siguiente paso: **HITO 1** presentado con la plantilla del pun
 - Guardado como `docs/00-discovery/analisis.md` tras aprobar (solo documentación).
 - Comprobación: los 45 puntos presentes en orden; cada decisión etiquetada; ninguna propuesta presentada como requisito del cliente; todas las dependencias de preguntas pendientes ligadas a un hito.
 - No se crea código, Docker ni dependencias en este paso.
+
+
+---
+
+# Anexo A — Actualización final (21-11-2026): qué se construyó y qué cambió
+
+## A.1 Estado por hitos
+| Hito | Estado | Evidencia |
+|---|---|---|
+| 0 Discovery | ✅ | este documento + 7 ADR |
+| 1 Base, Docker, config | ✅ | `docker-compose.yml`, Dockerfiles multi-etapa, healthchecks `/health` y `/ready` |
+| 2 BD + migraciones | ✅ | 28 tablas, Alembic, trigger de auditoría inmutable |
+| 3 Auth + usuarios + roles | ✅ | argon2id, JWT + refresh rotativo, CSRF, RBAC |
+| 4 Cursos + categorías + admin | ✅ | catálogo i18n, administración con auditoría (crear/activar/desactivar/cancelar; **editar solo por API**) |
+| 5 Reservas + cupos | ✅ | bloqueo de fila + índice único parcial + idempotencia; pruebas con 25–30 contendientes |
+| 6 Pagos + comisión | ✅ (con proveedor **simulado**) | puerto/adaptador, webhooks firmados, comisión en puntos básicos |
+| 7 Notificaciones + QR | ✅ parcial | notificaciones y emails con reintentos; QR de check-in. **WhatsApp: no implementado** |
+| 8 Frontend | ✅ | Next.js, i18n por ruta, SEO, accesibilidad, panel de administración |
+| 9 Asíncrono | ✅ | worker + outbox |
+| 10 Telemetría | ✅ (local) | OpenTelemetry verificado hasta Tempo/Prometheus; **no activado en la demo de Render** |
+| 11 Data pipeline | ✅ | outbox → esquema `analytics`, idempotente y reconstruible |
+| 12 Testing | ✅ parcial | ver A.3. **Falta prueba de carga (k6)** |
+| 13 Rendimiento/seguridad/a11y/SEO | ✅ | `docs/rendimiento.md`; auditorías de seguridad y secretos en CI; axe en E2E; `llms.txt`, sitemap, JSON-LD |
+| 14 CI/CD + staging | ✅ parcial | GitHub Actions en verde (4 trabajos). No hay un entorno *staging* separado: la demo de Render hace de tal |
+| 15 Asistente de IA | 🟡 implementado y probado **con un cliente simulado**; sin activar (falta clave) y **no probado con Claude real** | ADR-0007 |
+| 16 Documentación + producción | 🟡 documentación ✅; **despliegue de demostración en Render ✅**; producción real ⏳ | `docs/despliegue.md` |
+
+## A.2 Decisiones que cambiaron respecto al análisis
+1. **Cola de tareas:** outbox transaccional + worker con *polling* a PostgreSQL, no Procrastinate (ADR-0005). En el plan gratuito de Render el worker puede ir **dentro de la API** (`EMBEDDED_WORKER`).
+2. **Regla de las 24 h (P-03/RN-13):** el análisis la planteaba mal. Como solo se reserva con más de 24 h de antelación, el plazo de pago de 24 h siempre termina antes del inicio. Corregido en el cuerpo.
+3. **Frontend:** Next.js 16 con `cacheComponents` desactivado (modelo clásico, más simple para una web con datos dinámicos).
+4. **Autenticación:** cookies `httpOnly` + CSRF por doble envío, con la API y la web en el mismo origen mediante un proxy `/api/*` (sin CORS).
+5. **QR:** token HMAC derivado del id de la reserva, **sin almacenarlo** y sin datos personales.
+6. **Límite de intentos por cliente:** con solo el proxy de Next no hay IP real del cliente. `TRUSTED_PROXY_HOPS` queda en 0 y solo se activa detrás de un proxy inverso real (si no, se podría falsificar la cabecera).
+7. **Fotos de cursos:** enlazadas desde webs de terceros y optimizadas por nuestro servidor solo para una **lista cerrada** de servidores. Es frágil (tres webs las bloquean); la solución real es almacenarlas en el proyecto.
+8. **Despliegue:** Render (Blueprint `render.yaml`) en el plan gratuito, con pagos simulados explícitamente permitidos (`ALLOW_FAKE_PAYMENTS`) y sin correo. La aplicación **se niega a arrancar** en staging/producción con secretos por defecto, cookies sin `Secure` o pagos simulados sin ese permiso expreso.
+9. **Supabase y Redis:** no se usaron (ADR-0003 y ADR-0005).
+
+## A.3 Requisitos no funcionales: objetivo frente a lo medido
+| Área | Objetivo (sección 9) | Resultado |
+|---|---|---|
+| Seguridad | 0 vulnerabilidades altas/críticas conocidas; 0 secretos en el repo | ✅ `pip-audit`, `npm audit`, Trivy (solo vulnerabilidades) y gitleaks en verde en CI |
+| Rendimiento | p95 API < 300 ms; LCP < 2,5 s en 4G móvil | LCP: ✅ portada 0,9 s y catálogo 0,9 s. **p95 de la API: no medido formalmente** (las consultas simples responden en décimas de segundo) |
+| Disponibilidad | 99,5 % interno | ❌ no cumplido en la demo: el plan gratuito de Render se duerme y tarda 30–60 s en despertar |
+| Mantenibilidad | lint y tipos sin errores; límites entre dominios | ✅ ruff, mypy estricto, ESLint, `tsc`. (No se añadió `import-linter`) |
+| Observabilidad | 100 % de peticiones con `request_id`/`trace_id`; logs sin datos sensibles | ✅ verificado con tests (logs JSON, redacción de secretos, trazas SQL sin valores de parámetros) |
+| Accesibilidad | WCAG 2.2 AA en los flujos principales | ✅ axe: 0 violaciones graves en 6 páginas públicas y en el chat; Lighthouse 100. (No se hizo revisión manual con lector de pantalla) |
+| Escalabilidad | 10× la carga estimada sin reescribir | ❓ **no probada** (no hay prueba de carga) |
+| Recuperación | RPO ≤ 24 h, RTO ≤ 4 h | 🟡 `scripts/backup.sh` y `scripts/restore-check.sh` con simulacro de restauración ejecutado una vez; **no hay copias automáticas** |
+| Testabilidad | ≥ 80 % de cobertura; casos críticos cubiertos | ✅ **94 %** de cobertura en backend (188 tests, con PostgreSQL real); 23 tests unitarios de frontend; 14 pruebas E2E de navegador. Los 15 casos críticos de la sección 34 tienen test |
+
+## A.4 Lo que sigue pendiente
+- **Del cliente (sin cambios):** las 18 preguntas de la sección 12 (proveedor de pagos, quién recibe el 20 %, reembolsos, QR/WhatsApp, grabaciones, textos legales…). Con ellas se conectarían pagos y correo reales.
+- **Técnico:** almacenar las fotos en el proyecto; editar cursos y crear categorías/sedes desde el panel; verificación de email y doble verificación para administradores; usuario de base de datos con permisos mínimos; prueba de carga; copias de seguridad automáticas; probar el asistente con una clave real.

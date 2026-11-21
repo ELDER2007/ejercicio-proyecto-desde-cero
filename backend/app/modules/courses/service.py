@@ -24,6 +24,7 @@ from app.modules.courses.models import (
 )
 from app.modules.courses.schemas import (
     AdminCourse,
+    AdminCourseDetail,
     Availability,
     CategoryCreate,
     CategoryOut,
@@ -268,6 +269,33 @@ def _summary_from(course: Course, t: CourseTranslation, left: int) -> CourseSumm
         cover_image_url=course.cover_image_url,
         cover_image_alt=course.cover_image_alt,
         status=course.status,
+    )
+
+
+async def admin_get_course(session: AsyncSession, course_id: uuid.UUID) -> AdminCourseDetail:
+    course = (
+        (await session.execute(select(Course).where(Course.id == course_id).execution_options(populate_existing=True)))
+        .scalars()
+        .unique()
+        .one_or_none()
+    )
+    if course is None:
+        raise NotFoundError("Curso no encontrado.")
+    base = await _admin_view(session, course)
+    return AdminCourseDetail(
+        **base.model_dump(),
+        venue_id=course.venue_id,
+        instructor_id=course.instructor_id,
+        translations={
+            t.locale: TranslationIn(
+                name=t.name,
+                short_description=t.short_description,
+                description=t.description,
+                materials=t.materials,
+                requirements=t.requirements,
+            )
+            for t in course.translations
+        },
     )
 
 

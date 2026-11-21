@@ -59,8 +59,8 @@ export default async function CoursesPage({ params, searchParams }: { params: Pr
         <p className="py-10 text-center text-muted">{t("noResults")}</p>
       ) : (
         <ul className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {data.items.map((c) => (
-            <li key={c.id}><CourseCard course={c} /></li>
+          {data.items.map((c, i) => (
+            <li key={c.id}><CourseCard course={c} headingLevel={2} priority={i < 3} /></li>
           ))}
         </ul>
       )}

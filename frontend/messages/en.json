@@ -205,7 +205,13 @@
     "wakingBody": "This demo runs on a free server that sleeps when idle. Wait a few seconds and press “Try again”.",
     "retry": "Try again",
     "ASSISTANT_UNAVAILABLE": "The assistant is not available right now. Please try again in a moment.",
-    "ASSISTANT_DISABLED": "The assistant is not available at the moment."
+    "ASSISTANT_DISABLED": "The assistant is not available at the moment.",
+    "CAPACITY_BELOW_BOOKINGS": "You cannot lower the capacity below the spots already taken.",
+    "INVALID_SCHEDULE": "The end time must be after the start time.",
+    "MULTI_DAY_NOT_ALLOWED": "Courses last a single day.",
+    "START_IN_PAST": "The start date must be in the future.",
+    "MISSING_TRANSLATION": "The Spanish translation is missing.",
+    "INVALID_TIMEZONE": "Invalid time zone."
   },
   "account": {
     "title": "My account",
@@ -272,14 +278,29 @@
       "capacity": "Capacity",
       "price": "Price (in pesos)",
       "approval": "Requires manual approval",
-      "recorded": "Will be recorded (YouTube)"
+      "recorded": "Will be recorded (YouTube)",
+      "materialsEs": "Materials (Spanish)",
+      "requirementsEs": "Requirements (Spanish)",
+      "materialsEn": "Materials (English)",
+      "requirementsEn": "Requirements (English)",
+      "photo": "Course photo",
+      "coverUrl": "Photo address (https://…)",
+      "coverHint": "Paste the image link. Leave empty to remove the photo.",
+      "coverAlt": "Photo description",
+      "coverAltHint": "For screen-reader users. E.g. “Students shaping clay on a wheel”.",
+      "coverAltRequired": "Describe the photo (required when there is a photo)"
     },
     "commissionRate": "Current commission",
     "analytics": "Analytics (30 days)",
     "views": "Views",
     "bookingsCreated": "Bookings created",
     "bookingsConfirmed": "Bookings confirmed",
-    "conversion": "View → booking"
+    "conversion": "View → booking",
+    "edit": "Edit",
+    "editCourse": "Edit course",
+    "saveChanges": "Save changes",
+    "saved": "Changes saved. They are already live on the website.",
+    "loadingCourse": "Loading course…"
   },
   "faq": {
     "title": "Frequently asked questions",

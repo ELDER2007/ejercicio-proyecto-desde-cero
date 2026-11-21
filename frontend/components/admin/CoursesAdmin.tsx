@@ -53,6 +53,11 @@ export function CoursesAdmin() {
             header: t("actions"),
             cell: (c) => (
               <div className="flex flex-col gap-2">
+                {c.status !== "CANCELLED" ? (
+                  <Link href={{ pathname: "/admin/courses/[id]", params: { id: c.id } }} className={buttonClass("secondary", "min-h-9 px-3 py-1")}>
+                    {t("edit")}
+                  </Link>
+                ) : null}
                 {c.status !== "ACTIVE" && c.status !== "CANCELLED" ? <Button className="min-h-9 px-3 py-1" onClick={() => run(() => api(`/admin/courses/${c.id}/activate`, { method: "POST" }))}>{t("activate")}</Button> : null}
                 {c.status === "ACTIVE" ? <Button variant="secondary" className="min-h-9 px-3 py-1" onClick={() => run(() => api(`/admin/courses/${c.id}/deactivate`, { method: "POST" }))}>{t("deactivate")}</Button> : null}
                 {c.status !== "CANCELLED" ? <ReasonAction variant="danger" label={t("cancelCourse")} onConfirm={(reason) => run(() => api(`/admin/courses/${c.id}/cancel`, { method: "POST", body: { reason } }))} /> : null}

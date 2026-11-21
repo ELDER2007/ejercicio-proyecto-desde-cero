@@ -11,6 +11,7 @@ from app.modules.courses import service
 from app.modules.courses.models import CourseStatus, Venue
 from app.modules.courses.schemas import (
     AdminCourse,
+    AdminCourseDetail,
     AdminCoursePage,
     CategoryCreate,
     CategoryOut,
@@ -34,6 +35,13 @@ async def list_courses(
 ) -> AdminCoursePage:
     items, total = await service.admin_list_courses(session, status=status, limit=limit, offset=offset)
     return AdminCoursePage(items=items, total=total, limit=limit, offset=offset)
+
+
+@router.get("/courses/{course_id}", response_model=AdminCourseDetail, summary="Un curso con todo lo editable")
+async def get_course(
+    course_id: uuid.UUID, _: Principal = Staff, session: AsyncSession = Depends(get_session)
+) -> AdminCourseDetail:
+    return await service.admin_get_course(session, course_id)
 
 
 @router.post("/courses", response_model=AdminCourse, status_code=201, summary="Crear curso (queda en borrador)")

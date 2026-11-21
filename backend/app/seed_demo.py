@@ -59,8 +59,8 @@ IMAGES: dict[str, tuple[str, str]] = {
         "Profesora ayudando a una alumna con una máquina de coser",
     ),
     "Mantenimiento básico de tu moto": (
-        "https://imesanmartin.com/wp-content/uploads/2024/10/IME_carrera_mecanica_motos_1.jpg",
-        "Mecánico reparando el motor de una moto en un taller",
+        "https://institutointer.com/wp-content/uploads/2018/08/Curso-mec%C3%A1nica-en-castellon.jpg",
+        "Instructor y alumno revisando juntos el motor de un coche con el capó abierto",
     ),
     "Acuarela para principiantes": (
         "https://daler-rowney.com/wp-content/uploads/2025/06/imgi_19_134500112_simply_watercolour_activityset_eye_8.jpg",

@@ -1,5 +1,6 @@
 import type { NextConfig } from "next";
 import createNextIntlPlugin from "next-intl/plugin";
+import { IMAGE_HOSTS } from "./lib/imageHosts";
 
 const withNextIntl = createNextIntlPlugin("./i18n/request.ts");
 
@@ -11,6 +12,13 @@ const API_INTERNAL_URL = /^https?:\/\//.test(RAW_API) ? RAW_API : `http://${RAW_
 const nextConfig: NextConfig = {
   output: "standalone",
   poweredByHeader: false,
+  images: {
+    remotePatterns: IMAGE_HOSTS.map((hostname) => ({ protocol: "https" as const, hostname })),
+    formats: ["image/webp"],
+    minimumCacheTTL: 60 * 60 * 24,
+    deviceSizes: [400, 640, 828, 1080, 1280],
+    imageSizes: [380, 700],
+  },
   // Tailwind v4 se procesa con el loader de Turbopack (sin PostCSS). Si se quita, la web sale SIN estilos.
   turbopack: {
     rules: {

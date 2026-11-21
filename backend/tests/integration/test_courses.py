@@ -1,5 +1,6 @@
 from datetime import UTC, datetime, timedelta
 
+import pytest
 from sqlalchemy import select
 
 from app.modules.audit.models import AuditLog
@@ -225,3 +226,115 @@ async def test_client_cannot_use_course_admin(client, session):
     r = await client.post(f"{API}/admin/courses", json=payload(cat.id, venue.id), headers=csrf_headers(client))
     assert r.status_code == 403
     assert (await client.get(f"{API}/admin/courses")).status_code == 403
+
+
+# ------------------------------------------------------------------ edición desde el panel
+
+
+async def create_course_via_api(client, session):
+    cat, venue = await base_refs(session)
+    await admin_client(client, session)
+    r = await client.post(f"{API}/admin/courses", json=payload(cat.id, venue.id), headers=csrf_headers(client))
+    assert r.status_code == 201, r.text
+    await client.post(f"{API}/admin/courses/{r.json()['id']}/activate", headers=csrf_headers(client))
+    return r.json()["id"], cat, venue
+
+
+async def test_admin_can_read_everything_editable(client, session):
+    cid, cat, venue = await create_course_via_api(client, session)
+    d = (await client.get(f"{API}/admin/courses/{cid}")).json()
+    assert d["venue_id"] == str(venue.id) and d["category"]["id"] == str(cat.id)
+    assert d["translations"]["es"]["name"] == "Cerámica para principiantes"
+    assert d["translations"]["en"]["name"] == "Beginner Ceramics"
+    assert d["capacity"] == 5 and d["price_minor"] == 12_000_000
+
+
+async def test_edit_photo_and_texts_keeps_urls_stable_and_audits_without_leaking(client, session):
+    cid, *_ = await create_course_via_api(client, session)
+    url = "https://example.com/foto-nueva.jpg"
+    body = {
+        "cover_image_url": url,
+        "cover_image_alt": "Manos modelando arcilla",
+        "price_minor": 9_000_000,
+        "translations": {
+            "es": {
+                "name": "Cerámica avanzada",
+                "short_description": "Nuevo resumen",
+                "description": "Nuevo texto largo",
+            }
+        },
+    }
+    r = await client.patch(f"{API}/admin/courses/{cid}", json=body, headers=csrf_headers(client))
+    assert r.status_code == 200, r.text
+    assert r.json()["cover_image_url"] == url and r.json()["price_minor"] == 9_000_000
+    # El slug NO cambia aunque cambie el nombre (las URLs de SEO son estables)
+    public = (await client.get(f"{API}/courses/ceramica-para-principiantes?locale=es")).json()
+    assert public["name"] == "Cerámica avanzada" and public["cover_image_alt"] == "Manos modelando arcilla"
+    # La inglesa no se tocó
+    assert (await client.get(f"{API}/courses/beginner-ceramics?locale=en")).json()["name"] == "Beginner Ceramics"
+    # Auditoría: queda constancia de QUÉ campos cambiaron, sin copiar la URL
+    audit = (await session.execute(select(AuditLog).where(AuditLog.action == "course.updated"))).scalar_one()
+    assert audit.changes["cover_image_url"] == "changed" and url not in str(audit.changes)
+
+
+@pytest.mark.parametrize(
+    "bad",
+    [
+        "javascript:alert(1)",
+        "http://inseguro.com/a.jpg",
+        "data:image/png;base64,AAAA",
+        "ftp://x.com/a.jpg",
+        "no es una url",
+    ],
+)
+async def test_photo_must_be_https(client, session, bad):
+    cid, *_ = await create_course_via_api(client, session)
+    r = await client.patch(f"{API}/admin/courses/{cid}", json={"cover_image_url": bad}, headers=csrf_headers(client))
+    assert r.status_code == 422 and r.json()["error"]["code"] == "VALIDATION_ERROR"
+
+
+async def test_empty_photo_removes_it(client, session):
+    cid, *_ = await create_course_via_api(client, session)
+    await client.patch(
+        f"{API}/admin/courses/{cid}",
+        json={"cover_image_url": "https://example.com/a.jpg"},
+        headers=csrf_headers(client),
+    )
+    r = await client.patch(f"{API}/admin/courses/{cid}", json={"cover_image_url": ""}, headers=csrf_headers(client))
+    assert r.status_code == 200 and r.json()["cover_image_url"] is None
+
+
+@pytest.mark.parametrize("field", ["capacity", "price_minor", "starts_at", "category_id", "venue_id"])
+async def test_required_fields_cannot_be_nulled(client, session, field):
+    cid, *_ = await create_course_via_api(client, session)
+    r = await client.patch(f"{API}/admin/courses/{cid}", json={field: None}, headers=csrf_headers(client))
+    assert r.status_code == 422  # antes esto habría sido un 500 por violar NOT NULL
+
+
+async def test_cancelled_course_cannot_be_edited(client, session):
+    cid, *_ = await create_course_via_api(client, session)
+    await client.post(
+        f"{API}/admin/courses/{cid}/cancel", json={"reason": "instructor enfermo"}, headers=csrf_headers(client)
+    )
+    r = await client.patch(f"{API}/admin/courses/{cid}", json={"price_minor": 1}, headers=csrf_headers(client))
+    assert r.status_code == 409 and r.json()["error"]["code"] == "COURSE_CANCELLED"
+
+
+async def test_client_cannot_read_or_edit_admin_course(client, session, new_client):
+    cid, *_ = await create_course_via_api(client, session)
+    other = await new_client()
+    await other.post(f"{API}/auth/register", json=REGISTER)
+    assert (await other.get(f"{API}/admin/courses/{cid}")).status_code == 403
+    r = await other.patch(f"{API}/admin/courses/{cid}", json={"price_minor": 1}, headers=csrf_headers(other))
+    assert r.status_code == 403
+
+
+async def test_create_also_rejects_unsafe_photo(client, session):
+    cat, venue = await base_refs(session)
+    await admin_client(client, session)
+    r = await client.post(
+        f"{API}/admin/courses",
+        json=payload(cat.id, venue.id, cover_image_url="javascript:alert(1)"),
+        headers=csrf_headers(client),
+    )
+    assert r.status_code == 422

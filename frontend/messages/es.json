@@ -205,7 +205,13 @@
     "wakingBody": "Esta demo usa un servidor gratuito que se duerme cuando nadie lo usa. Espera unos segundos y pulsa «Reintentar».",
     "retry": "Reintentar",
     "ASSISTANT_UNAVAILABLE": "El asistente no está disponible ahora. Inténtalo de nuevo en un momento.",
-    "ASSISTANT_DISABLED": "El asistente no está disponible en este momento."
+    "ASSISTANT_DISABLED": "El asistente no está disponible en este momento.",
+    "CAPACITY_BELOW_BOOKINGS": "No puedes bajar la capacidad por debajo de las plazas ya ocupadas.",
+    "INVALID_SCHEDULE": "La hora de fin debe ser posterior a la de inicio.",
+    "MULTI_DAY_NOT_ALLOWED": "Los cursos son de un solo día.",
+    "START_IN_PAST": "La fecha de inicio debe ser futura.",
+    "MISSING_TRANSLATION": "Falta la traducción en español.",
+    "INVALID_TIMEZONE": "Zona horaria no válida."
   },
   "account": {
     "title": "Mi cuenta",
@@ -272,14 +278,29 @@
       "capacity": "Capacidad",
       "price": "Precio (en pesos)",
       "approval": "Requiere aprobación manual",
-      "recorded": "Se grabará (YouTube)"
+      "recorded": "Se grabará (YouTube)",
+      "materialsEs": "Materiales (español)",
+      "requirementsEs": "Requisitos (español)",
+      "materialsEn": "Materiales (inglés)",
+      "requirementsEn": "Requisitos (inglés)",
+      "photo": "Foto del curso",
+      "coverUrl": "Dirección de la foto (https://…)",
+      "coverHint": "Pega el enlace de la imagen. Déjalo vacío para quitar la foto.",
+      "coverAlt": "Descripción de la foto",
+      "coverAltHint": "Para personas que usan lector de pantalla. Ej.: «Alumnos modelando arcilla en un torno».",
+      "coverAltRequired": "Describe la foto (obligatorio si hay foto)"
     },
     "commissionRate": "Comisión actual",
     "analytics": "Analítica (30 días)",
     "views": "Visitas",
     "bookingsCreated": "Reservas creadas",
     "bookingsConfirmed": "Reservas confirmadas",
-    "conversion": "Visita → reserva"
+    "conversion": "Visita → reserva",
+    "edit": "Editar",
+    "editCourse": "Editar curso",
+    "saveChanges": "Guardar cambios",
+    "saved": "Cambios guardados. Ya se ven en la web.",
+    "loadingCourse": "Cargando el curso…"
   },
   "faq": {
     "title": "Preguntas frecuentes",

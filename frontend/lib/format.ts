@@ -36,3 +36,17 @@ export function remaining(iso: string, now: number = Date.now()): { hours: numbe
   if (ms <= 0) return { hours: 0, minutes: 0, expired: true };
   return { hours: Math.floor(ms / 3_600_000), minutes: Math.floor((ms % 3_600_000) / 60_000), expired: false };
 }
+
+/** ISO (UTC) -> "YYYY-MM-DDTHH:mm" en hora de Bogotá, el formato que usa <input type="datetime-local">. */
+export function toBogotaLocalInput(iso: string): string {
+  const parts = new Intl.DateTimeFormat("sv-SE", {
+    timeZone: "America/Bogota", year: "numeric", month: "2-digit", day: "2-digit",
+    hour: "2-digit", minute: "2-digit", hourCycle: "h23",
+  }).format(new Date(iso));
+  return parts.replace(" ", "T");
+}
+
+/** "YYYY-MM-DDTHH:mm" (hora de Bogotá, UTC-5 sin cambio horario) -> ISO con zona. */
+export function bogotaInputToIso(local: string): string {
+  return `${local}:00-05:00`;
+}

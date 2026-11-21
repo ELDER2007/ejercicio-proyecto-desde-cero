@@ -99,3 +99,54 @@ test("admin aprueba y el cliente ve su plaza confirmada con QR", async ({ page, 
   await expect(clientPage.getByRole("img", { name: "Tu código QR" })).toBeVisible();
   await ctx.close();
 });
+
+test("admin crea un curso, cambia su foto y los datos y se conservan categoría y sede", async ({ page }) => {
+  const name = `Curso E2E ${stamp}`;
+  const when = new Date(Date.now() + 10 * 24 * 3600 * 1000).toISOString().slice(0, 10);
+  await login(page, ADMIN.email, ADMIN.password);
+
+  // Crear
+  await page.goto("/es/admin/courses/new");
+  await page.getByLabel("Nombre (español)").fill(name);
+  await page.getByLabel("Descripción corta (español)").fill("Corto");
+  await page.getByLabel("Descripción completa (español)").fill("Descripción completa del curso de prueba");
+  await expect(page.getByLabel("Sede").locator("option")).not.toHaveCount(0);
+  await page.getByLabel("Categoría").selectOption({ index: 2 });
+  const category = await page.getByLabel("Categoría").inputValue(); // lo elegido al crear
+  const venue = await page.getByLabel("Sede").inputValue();
+  await page.getByLabel("Inicio (hora de Bogotá)").fill(`${when}T10:00`);
+  await page.getByLabel("Fin (hora de Bogotá)").fill(`${when}T12:00`);
+  await page.getByLabel("Capacidad").fill("5");
+  await page.getByLabel("Precio (en pesos)").fill("50000");
+  await page.getByRole("button", { name: "Crear curso" }).click();
+  await page.waitForURL(/\/es\/admin\/courses$/);
+  await expect(page.getByText(name).first()).toBeVisible();
+
+  // Editar: la foto exige descripción y solo admite https
+  await page.getByRole("row").filter({ hasText: name }).getByRole("link", { name: "Editar" }).click();
+  await expect(page.getByRole("heading", { name: "Editar curso" })).toBeVisible();
+  await expect(page.getByLabel("Categoría")).toHaveValue(category); // la edición carga lo guardado, no la 1.ª opción
+  await expect(page.getByLabel("Sede")).toHaveValue(venue);
+  await page.getByLabel("Dirección de la foto (https://…)").fill("http://inseguro.example.com/a.jpg");
+  await page.getByLabel("Descripción de la foto", { exact: true }).fill("Una foto de prueba");
+  await page.getByRole("button", { name: "Guardar cambios" }).click();
+  await expect(page.getByText("Revisa los campos marcados")).toBeVisible(); // http no se acepta
+
+  await page.getByLabel("Dirección de la foto (https://…)").fill("https://institutointer.com/wp-content/uploads/2018/08/Curso-mec%C3%A1nica-en-castellon.jpg");
+  await page.getByLabel("Capacidad").fill("8");
+  await page.getByRole("button", { name: "Guardar cambios" }).click();
+  await expect(page.getByText("Cambios guardados")).toBeVisible();
+
+  // Recargar: todo persiste y categoría/sede no han cambiado solas
+  await page.reload();
+  await expect(page.getByLabel("Capacidad")).toHaveValue("8");
+  await expect(page.getByLabel("Dirección de la foto (https://…)")).toHaveValue(/institutointer\.com/);
+  await expect(page.getByLabel("Categoría")).toHaveValue(category);
+  await expect(page.getByLabel("Sede")).toHaveValue(venue);
+
+  // Dejar la foto vacía la quita
+  await page.getByLabel("Dirección de la foto (https://…)").fill("");
+  await page.getByLabel("Descripción de la foto", { exact: true }).fill("");
+  await page.getByRole("button", { name: "Guardar cambios" }).click();
+  await expect(page.getByText("Cambios guardados")).toBeVisible();
+});

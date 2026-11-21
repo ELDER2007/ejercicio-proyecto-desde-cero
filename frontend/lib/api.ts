@@ -71,6 +71,14 @@ function readCookie(name: string): string {
   return m ? decodeURIComponent(m[1]) : "";
 }
 
+/**
+ * ¿Puede haber una sesión? La cookie `csrf_token` (legible por JS) solo existe mientras hay sesión iniciada.
+ * Si no está, un visitante anónimo no necesita preguntar al servidor (evita 401 inútiles y ruido en la consola).
+ */
+export function hasSessionHint(): boolean {
+  return readCookie("csrf_token") !== "";
+}
+
 type Opts = { method?: string; body?: unknown; idempotencyKey?: string };
 
 async function rawFetch(path: string, opts: Opts): Promise<Response> {
@@ -90,7 +98,7 @@ async function rawFetch(path: string, opts: Opts): Promise<Response> {
 export async function api<T = void>(path: string, opts: Opts = {}): Promise<T> {
   let res = await rawFetch(path, opts);
   // Access token caducado (15 min): intentamos UNA renovación silenciosa y reintentamos.
-  if (res.status === 401 && !path.startsWith("/auth/")) {
+  if (res.status === 401 && !path.startsWith("/auth/") && hasSessionHint()) {
     const refreshed = await rawFetch("/auth/refresh", { method: "POST" });
     if (refreshed.ok) res = await rawFetch(path, opts);
   }

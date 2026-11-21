@@ -45,8 +45,8 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
         <h2 id="upcoming" className="text-2xl font-bold">{t("upcoming")}</h2>
         {courses && courses.items.length > 0 ? (
           <ul className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {courses.items.map((c) => (
-              <li key={c.id}><CourseCard course={c} /></li>
+            {courses.items.map((c, i) => (
+              <li key={c.id}><CourseCard course={c} priority={i < 3} /></li>
             ))}
           </ul>
         ) : courses === null ? (

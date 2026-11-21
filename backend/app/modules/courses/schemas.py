@@ -1,10 +1,24 @@
 import uuid
 from datetime import datetime
 from typing import Annotated, Literal
+from urllib.parse import urlparse
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
 Locale = Literal["es", "en"]
+
+
+def _https_url(v: str | None) -> str | None:
+    """Enlaces de fotos/grabaciones: solo https y con servidor (nada de javascript:, data: ni http sin cifrar)."""
+    if v is None:
+        return None
+    v = v.strip()
+    if not v:
+        return None
+    u = urlparse(v)
+    if u.scheme != "https" or not u.netloc or len(v) > 500:
+        raise ValueError("Debe ser un enlace https:// válido (máximo 500 caracteres)")
+    return v
 
 
 class CategoryOut(BaseModel):
@@ -102,6 +116,11 @@ class CourseCreate(BaseModel):
             raise ValueError("La fecha debe incluir zona horaria (p. ej. 2026-12-05T09:00:00-05:00)")
         return v
 
+    @field_validator("cover_image_url")
+    @classmethod
+    def _cover_https(cls, v: str | None) -> str | None:
+        return _https_url(v)
+
     @model_validator(mode="after")
     def _check(self) -> "CourseCreate":
         if "es" not in self.translations:
@@ -125,6 +144,29 @@ class CourseUpdate(BaseModel):
     cover_image_alt: str | None = None
     translations: dict[Locale, TranslationIn] | None = None
 
+    @field_validator("cover_image_url", "recording_url")
+    @classmethod
+    def _https(cls, v: str | None) -> str | None:
+        return _https_url(v)  # "" o null => quitar el valor
+
+    @model_validator(mode="after")
+    def _not_null_where_required(self) -> "CourseUpdate":
+        required = (
+            "category_id",
+            "venue_id",
+            "starts_at",
+            "ends_at",
+            "capacity",
+            "price_minor",
+            "requires_approval",
+            "is_recorded",
+            "recording_status",
+        )
+        for f in required:
+            if f in self.model_fields_set and getattr(self, f) is None:
+                raise ValueError(f"{f} no puede ser nulo")
+        return self
+
 
 class AdminCourse(CourseSummary):
     seats_taken: int
@@ -133,6 +175,14 @@ class AdminCourse(CourseSummary):
     recording_status: str
     recording_url: str | None
     translations_available: list[str]
+
+
+class AdminCourseDetail(AdminCourse):
+    """Todo lo editable de un curso (para el formulario de edición del panel)."""
+
+    venue_id: uuid.UUID
+    instructor_id: uuid.UUID | None
+    translations: dict[Locale, TranslationIn]
 
 
 class AdminCoursePage(BaseModel):

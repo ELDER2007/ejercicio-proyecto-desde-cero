@@ -388,7 +388,8 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get?: never;
+        /** Un curso con todo lo editable */
+        get: operations["get_course_api_v1_admin_courses__course_id__get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -976,6 +977,80 @@ export interface components {
             recording_url: string | null;
             /** Translations Available */
             translations_available: string[];
+        };
+        /**
+         * AdminCourseDetail
+         * @description Todo lo editable de un curso (para el formulario de edición del panel).
+         */
+        AdminCourseDetail: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Slug */
+            slug: string;
+            /** Name */
+            name: string;
+            /** Short Description */
+            short_description: string;
+            category: components["schemas"]["CategoryOut"];
+            /**
+             * Starts At
+             * Format: date-time
+             */
+            starts_at: string;
+            /**
+             * Ends At
+             * Format: date-time
+             */
+            ends_at: string;
+            /** Timezone */
+            timezone: string;
+            /**
+             * Price Minor
+             * @description Precio en la unidad monetaria mínima (centavos). Nunca float.
+             */
+            price_minor: number;
+            /** Currency */
+            currency: string;
+            /** Language */
+            language: string;
+            /** Capacity */
+            capacity: number;
+            /** Seats Available */
+            seats_available: number;
+            /** Is Full */
+            is_full: boolean;
+            /** Cover Image Url */
+            cover_image_url?: string | null;
+            /** Cover Image Alt */
+            cover_image_alt?: string | null;
+            /** Status */
+            status: string;
+            /** Seats Taken */
+            seats_taken: number;
+            /** Requires Approval */
+            requires_approval: boolean;
+            /** Is Recorded */
+            is_recorded: boolean;
+            /** Recording Status */
+            recording_status: string;
+            /** Recording Url */
+            recording_url: string | null;
+            /** Translations Available */
+            translations_available: string[];
+            /**
+             * Venue Id
+             * Format: uuid
+             */
+            venue_id: string;
+            /** Instructor Id */
+            instructor_id: string | null;
+            /** Translations */
+            translations: {
+                [key: string]: components["schemas"]["TranslationIn"];
+            };
         };
         /** AdminCoursePage */
         AdminCoursePage: {
@@ -2621,6 +2696,37 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AdminCourse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_course_api_v1_admin_courses__course_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                course_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminCourseDetail"];
                 };
             };
             /** @description Validation Error */

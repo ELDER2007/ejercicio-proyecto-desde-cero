@@ -9,6 +9,8 @@ import { SITE } from "@/lib/seo";
 import { routing } from "@/i18n/routing";
 import { BookButton } from "@/components/courses/BookButton";
 import { RegisterAlternates } from "@/components/layout/alternates";
+import { CourseImage } from "@/components/courses/CourseImage";
+import { isOptimizableImage } from "@/lib/imageHosts";
 import { TrackView } from "@/components/courses/TrackView";
 
 
@@ -108,8 +110,14 @@ export default async function CoursePage({ params }: { params: Promise<{ locale:
           <p className="mt-2 text-lg text-muted">{c.short_description}</p>
         </header>
         {c.cover_image_url ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={c.cover_image_url} alt={c.cover_image_alt ?? ""} className="aspect-video w-full rounded-xl object-cover object-[50%_30%]" />
+          <CourseImage
+            src={c.cover_image_url}
+            alt={c.cover_image_alt ?? ""}
+            optimize={isOptimizableImage(c.cover_image_url)}
+            priority
+            sizes="(min-width: 1024px) 700px, 100vw"
+            className="rounded-xl"
+          />
         ) : null}
         <section aria-labelledby="about">
           <h2 id="about" className="text-xl font-bold">{t("description")}</h2>

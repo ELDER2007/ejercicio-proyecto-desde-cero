@@ -4,6 +4,7 @@ import { formatDateTime, formatMoney, remaining } from "@/lib/format";
 describe("formatMoney", () => {
   it("muestra pesos colombianos a partir de centavos enteros", () => {
     expect(formatMoney(18_000_000, "COP", "es")).toMatch(/180\.000/);
+    expect(formatMoney(18_000_000, "COP", "es")).toMatch(/^COP\s180\.000$/); // moneda explícita, no solo "$"
     expect(formatMoney(18_000_000, "COP", "en")).toMatch(/180,000/);
   });
   it("no pierde precisión en importes grandes", () => {

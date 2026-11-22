@@ -4,6 +4,7 @@ export function formatMoney(minor: number, currency: string, locale: string): st
   return new Intl.NumberFormat(locale === "es" ? "es-CO" : "en-US", {
     style: "currency",
     currency,
+    currencyDisplay: "code", // "COP 180.000": el símbolo "$" es ambiguo para quien no es de Colombia
     maximumFractionDigits: currency === "COP" ? 0 : 2,
   }).format(major);
 }

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { api } from "@/lib/api";
 import { errorMessage } from "@/lib/errors";
+import { describeChanges, type ChangeCtx } from "@/lib/audit";
 import { formatMoney } from "@/lib/format";
 import { useApiData } from "@/lib/useApiData";
 import type { components } from "@/lib/api-types";
@@ -16,6 +17,12 @@ import { ReasonAction } from "./ReasonAction";
 type S = components["schemas"];
 const dt = (iso: string, locale: string) => new Date(iso).toLocaleString(locale === "es" ? "es-CO" : "en-US", { timeZone: "America/Bogota" });
 
+/** Traduce un valor técnico (p. ej. un estado) con el grupo de textos indicado; si no existe, deja el original. */
+function useLabel() {
+  const t = useTranslations("admin");
+  return (group: string, key: string) => (t.has(`${group}.${key}`) ? t(`${group}.${key}`) : key);
+}
+
 function Loading({ error }: { error: string | null }) {
   return error ? <Alert kind="error">{error}</Alert> : <p role="status" className="text-muted">…</p>;
 }
@@ -24,6 +31,7 @@ export function PaymentsAdmin() {
   const t = useTranslations("admin");
   const te = useTranslations("errors");
   const locale = useLocale();
+  const label = useLabel();
   const { data, error, reload } = useApiData<S["AdminPaymentPage"]>("/admin/payments?limit=100");
   const [actionError, setActionError] = useState<string | null>(null);
   if (!data) return <Loading error={error} />;
@@ -35,13 +43,13 @@ export function PaymentsAdmin() {
         columns={[
           { header: t("date"), cell: (p) => dt(p.created_at, locale) },
           { header: t("amount"), cell: (p) => formatMoney(p.amount_minor, p.currency, locale) },
-          { header: t("status"), cell: (p) => p.status },
-          { header: "Provider", cell: (p) => p.provider },
+          { header: t("status"), cell: (p) => label("paymentStatus", p.status) },
+          { header: t("provider"), cell: (p) => p.provider },
           {
             header: t("actions"),
             cell: (p) =>
               p.status === "PAID" ? (
-                <ReasonAction label="Refund" onConfirm={async (reason) => {
+                <ReasonAction label={t("refund")} onConfirm={async (reason) => {
                   try { await api(`/admin/payments/${p.id}/refund`, { method: "POST", body: { reason } }); setActionError(null); reload(); }
                   catch (e) { setActionError(errorMessage(e, te)); }
                 }} />
@@ -56,6 +64,7 @@ export function PaymentsAdmin() {
 export function UsersAdmin() {
   const t = useTranslations("admin");
   const ta = useTranslations("auth");
+  const label = useLabel();
   const [q, setQ] = useState("");
   const { data, error } = useApiData<S["Page"]>(`/admin/users?limit=100${q ? `&q=${encodeURIComponent(q)}` : ""}`);
   return (
@@ -68,7 +77,7 @@ export function UsersAdmin() {
             { header: ta("fullName"), cell: (u) => u.full_name },
             { header: ta("email"), cell: (u) => u.email },
             { header: ta("phone"), cell: (u) => u.phone ?? "—" },
-            { header: "Roles", cell: (u) => u.roles.join(", ") },
+            { header: t("roles"), cell: (u) => u.roles.map((r) => label("roleNames", r)).join(", ") },
           ]}
         />
       )}
@@ -80,6 +89,7 @@ export function CommissionsAdmin() {
   const t = useTranslations("admin");
   const te = useTranslations("errors");
   const locale = useLocale();
+  const label = useLabel();
   const { data, error, reload } = useApiData<S["CommissionSummary"]>("/admin/commissions?limit=100");
   const rate = useApiData<S["CommissionSettings"]>("/admin/settings/commission");
   const [bps, setBps] = useState<string>("");
@@ -121,7 +131,7 @@ export function CommissionsAdmin() {
           { header: "%", cell: (c) => `${(c.commission_bps / 100).toFixed(2)}` },
           { header: t("commission"), cell: (c) => formatMoney(c.commission_minor, c.currency, locale) },
           { header: t("net"), cell: (c) => formatMoney(c.net_minor, c.currency, locale) },
-          { header: t("status"), cell: (c) => c.status },
+          { header: t("status"), cell: (c) => label("commissionStatus", c.status) },
         ]}
       />
     </div>
@@ -130,18 +140,41 @@ export function CommissionsAdmin() {
 
 export function AuditAdmin() {
   const t = useTranslations("admin");
+  const tbs = useTranslations("booking.status");
+  const label = useLabel();
   const locale = useLocale();
   const { data, error } = useApiData<S["AuditPage"]>("/admin/audit-logs?limit=100");
   if (!data) return <Loading error={error} />;
+  const ctx: ChangeCtx = {
+    field: (k) => label("auditFields", k),
+    yes: t("yes"),
+    no: t("no"),
+    changed: t("changedValue"),
+    money: (minor) => formatMoney(minor, "COP", locale),
+    date: (iso) => dt(iso, locale),
+  };
+  const detail = (a: S["AuditPage"]["items"][number]) => {
+    const ch = a.changes as Record<string, unknown> | null;
+    if (a.action === "payment.status_changed" && ch) {
+      return `${label("paymentStatus", String(ch.from))} → ${label("paymentStatus", String(ch.to))}${ch.provider ? ` · ${String(ch.provider)}` : ""}`;
+    }
+    if (a.action === "settings.commission_changed" && ch) {
+      return `${(Number(ch.from) / 100).toFixed(2)} % → ${(Number(ch.to) / 100).toFixed(2)} %`;
+    }
+    // En las decisiones sobre reservas, "to" es el estado resultante: se muestra traducido
+    const shown = a.action.startsWith("booking.") && ch && typeof ch.to === "string" ? { ...ch, to: tbs.has(ch.to) ? tbs(ch.to) : ch.to } : ch;
+    const lines = describeChanges(shown, ctx);
+    return lines.length ? <ul className="space-y-0.5">{lines.map((l) => <li key={l}>{l}</li>)}</ul> : "—";
+  };
   return (
     <DataTable
       caption={t("audit")} empty="—" rows={data.items} rowKey={(a) => String(a.id)}
       columns={[
         { header: t("date"), cell: (a) => dt(a.created_at, locale) },
-        { header: "Action", cell: (a) => <code>{a.action}</code> },
-        { header: "Resource", cell: (a) => `${a.resource_type}${a.resource_id ? ` · ${a.resource_id.slice(0, 8)}` : ""}` },
-        { header: "Actor", cell: (a) => a.actor_user_id?.slice(0, 8) ?? "system" },
-        { header: "Changes", cell: (a) => <code className="break-all text-xs">{a.changes ? JSON.stringify(a.changes) : ""}</code> },
+        { header: t("auditCols.action"), cell: (a) => <span title={a.action}>{label("auditActions", a.action.replace(/\./g, "_"))}</span> },
+        { header: t("auditCols.resource"), cell: (a) => `${label("auditResources", a.resource_type)}${a.resource_id ? ` · ${a.resource_id.slice(0, 8)}` : ""}` },
+        { header: t("auditCols.actor"), cell: (a) => a.actor_user_id?.slice(0, 8) ?? t("system") },
+        { header: t("auditCols.changes"), cell: detail },
       ]}
     />
   );

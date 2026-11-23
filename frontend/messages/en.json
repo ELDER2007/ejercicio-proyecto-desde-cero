@@ -300,7 +300,93 @@
     "editCourse": "Edit course",
     "saveChanges": "Save changes",
     "saved": "Changes saved. They are already live on the website.",
-    "loadingCourse": "Loading course…"
+    "loadingCourse": "Loading course…",
+    "provider": "Provider",
+    "refund": "Refund",
+    "roles": "Roles",
+    "system": "System",
+    "yes": "Yes",
+    "no": "No",
+    "changedValue": "changed",
+    "auditCols": {
+      "action": "Action",
+      "resource": "Item",
+      "actor": "By",
+      "changes": "Details"
+    },
+    "auditActions": {
+      "course_created": "Course created",
+      "course_updated": "Course edited",
+      "course_cancelled": "Course cancelled",
+      "payment_status_changed": "Payment status changed",
+      "payment_refunded": "Payment refunded",
+      "user_anonymized": "Account deleted (data anonymized)",
+      "auth_password_reset": "Password reset",
+      "booking_checked_in": "Attendance recorded",
+      "category_created": "Category created",
+      "venue_created": "Venue created",
+      "permission_admin_granted": "Administrator permission granted",
+      "permission_admin_revoked": "Administrator permission revoked",
+      "settings_commission_changed": "Commission changed",
+      "booking_approved": "Booking approved",
+      "booking_rejected": "Booking rejected",
+      "booking_cancelled": "Booking cancelled"
+    },
+    "auditResources": {
+      "course": "Course",
+      "payment": "Payment",
+      "booking": "Booking",
+      "user": "User",
+      "category": "Category",
+      "venue": "Venue",
+      "settings": "Settings"
+    },
+    "auditFields": {
+      "category_id": "Category",
+      "venue_id": "Venue",
+      "starts_at": "Start",
+      "ends_at": "End",
+      "capacity": "Capacity",
+      "price_minor": "Price",
+      "requires_approval": "Requires approval",
+      "is_recorded": "Will be recorded",
+      "cover_image_url": "Photo",
+      "cover_image_alt": "Photo description",
+      "recording_url": "Recording link",
+      "recording_status": "Recording status",
+      "translations": "Languages edited",
+      "bookings_cancelled": "Bookings cancelled",
+      "provider": "Provider",
+      "reason": "Reason given",
+      "from": "Before",
+      "to": "Now",
+      "commission_bps": "Commission (basis points)"
+    },
+    "paymentStatus": {
+      "PENDING": "Pending",
+      "PROCESSING": "Processing",
+      "PAID": "Paid",
+      "FAILED": "Failed",
+      "CANCELLED": "Cancelled",
+      "REFUNDED": "Refunded"
+    },
+    "commissionStatus": {
+      "ACCRUED": "Accrued",
+      "SETTLED": "Settled",
+      "REVERSED": "Reversed"
+    },
+    "courseStatus": {
+      "DRAFT": "Draft",
+      "ACTIVE": "Active",
+      "INACTIVE": "Inactive",
+      "CANCELLED": "Cancelled"
+    },
+    "roleNames": {
+      "CLIENT": "Client",
+      "ADMIN": "Administrator",
+      "OWNER": "Owner",
+      "INSTRUCTOR": "Instructor"
+    }
   },
   "faq": {
     "title": "Frequently asked questions",

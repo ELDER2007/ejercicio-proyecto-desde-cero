@@ -71,7 +71,8 @@ export function CoursesAdmin() {
 }
 
 function StatusLabel({ status }: { status: string }) {
+  const t = useTranslations("admin");
   const tone: Record<string, string> = { ACTIVE: "bg-ok-soft text-ok", DRAFT: "bg-line text-muted", INACTIVE: "bg-warn-soft text-warn", CANCELLED: "bg-bad-soft text-bad" };
-  return <span className={`rounded-full px-3 py-1 text-xs font-semibold ${tone[status] ?? ""}`}>{status}</span>;
+  return <span className={`rounded-full px-3 py-1 text-xs font-semibold ${tone[status] ?? ""}`}>{t.has(`courseStatus.${status}`) ? t(`courseStatus.${status}`) : status}</span>;
 }
 

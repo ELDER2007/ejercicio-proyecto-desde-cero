@@ -382,6 +382,8 @@ async def update_course(
         _validate_one_day(starts, ends, course.timezone)
     audited: dict[str, Any] = {}
     for k, v in changes.items():
+        if getattr(course, k) == v:
+            continue  # el formulario envía el curso entero: solo se anota lo que de verdad cambió
         if k in ("recording_url", "cover_image_url"):
             audited[k] = "changed"
         else:
@@ -389,21 +391,28 @@ async def update_course(
         setattr(course, k, v)
     if data.translations:
         existing = {t.locale: t for t in course.translations}
+        translated: list[str] = []
         for locale, tr in data.translations.items():
             if locale in existing:
-                for f, val in tr.model_dump().items():
-                    setattr(existing[locale], f, val)  # el slug NO cambia (URLs estables para SEO)
+                new_values = tr.model_dump()
+                if any((getattr(existing[locale], f) or None) != (val or None) for f, val in new_values.items()):
+                    translated.append(locale)
+                    for f, val in new_values.items():
+                        setattr(existing[locale], f, val)  # el slug NO cambia (URLs estables para SEO)
             else:
                 session.add(_translation(course.id, locale, tr, await _unique_slug(session, locale, tr.name)))
-        audited["translations"] = list(sorted(data.translations))
-    await audit.record(
-        session,
-        actor_id=actor_id,
-        action="course.updated",
-        resource_type="course",
-        resource_id=course.id,
-        changes=audited,
-    )
+                translated.append(locale)
+        if translated:
+            audited["translations"] = sorted(translated)
+    if audited:  # un guardado sin cambios no deja rastro
+        await audit.record(
+            session,
+            actor_id=actor_id,
+            action="course.updated",
+            resource_type="course",
+            resource_id=course.id,
+            changes=audited,
+        )
     await session.commit()
     return await _admin_view(session, await _fresh(session, course.id))
 

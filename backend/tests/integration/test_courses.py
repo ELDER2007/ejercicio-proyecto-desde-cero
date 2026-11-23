@@ -277,6 +277,38 @@ async def test_edit_photo_and_texts_keeps_urls_stable_and_audits_without_leaking
     assert audit.changes["cover_image_url"] == "changed" and url not in str(audit.changes)
 
 
+async def test_saving_the_whole_form_audits_only_what_really_changed(client, session):
+    """El formulario envía el curso entero; el diario solo debe anotar el campo que cambió."""
+    cid, *_ = await create_course_via_api(client, session)
+    current = (await client.get(f"{API}/admin/courses/{cid}")).json()
+    full = {
+        "category_id": current["category"]["id"],
+        "venue_id": current["venue_id"],
+        "starts_at": current["starts_at"],
+        "ends_at": current["ends_at"],
+        "capacity": current["capacity"],
+        "price_minor": current["price_minor"],
+        "requires_approval": current["requires_approval"],
+        "is_recorded": current["is_recorded"],
+        "cover_image_url": None,
+        "cover_image_alt": None,
+        "translations": {"es": current["translations"]["es"], "en": current["translations"]["en"]},
+    }
+    # 1) Guardar sin tocar nada: no deja ninguna fila en el diario
+    r = await client.patch(f"{API}/admin/courses/{cid}", json=full, headers=csrf_headers(client))
+    assert r.status_code == 200, r.text
+    assert (await session.execute(select(AuditLog).where(AuditLog.action == "course.updated"))).first() is None
+    # 2) Cambiar solo el precio: el diario anota solo el precio
+    r = await client.patch(
+        f"{API}/admin/courses/{cid}",
+        json={**full, "price_minor": current["price_minor"] + 100},
+        headers=csrf_headers(client),
+    )
+    assert r.status_code == 200, r.text
+    audit = (await session.execute(select(AuditLog).where(AuditLog.action == "course.updated"))).scalar_one()
+    assert audit.changes == {"price_minor": current["price_minor"] + 100}
+
+
 @pytest.mark.parametrize(
     "bad",
     [

@@ -7,9 +7,11 @@ Plataforma web para una academia de **talleres presenciales de un día en Bogot�
 [![CI](https://github.com/4GeeksAcademy/ejercicio-proyecto-desde-cero/actions/workflows/ci.yml/badge.svg)](https://github.com/4GeeksAcademy/ejercicio-proyecto-desde-cero/actions/workflows/ci.yml)
 
 ## Demo en vivo
-**https://tallerya-web.onrender.com** · API: https://tallerya-api.onrender.com/docs (si la documentación está habilitada)
+**https://tallerya-web.onrender.com** · API: https://tallerya-api.onrender.com/docs
 
-> Está en el plan gratuito de Render: **se duerme tras ~15 min sin visitas** y la primera carga puede tardar hasta un minuto. Los pagos son **simulados** (no se cobra nada) y no se envían correos.
+> Está en el plan gratuito de Render: **se duerme tras ~15 min sin visitas** y la primera carga puede tardar **1–2 minutos** (pantalla «Service waking up»); las siguientes son rápidas. Los pagos son **simulados** (no se cobra nada) y no se envían correos.
+>
+> 👉 **¿Vas a revisarlo? Empieza por la [guía del revisor](docs/guia-del-revisor.md)**: qué probar, limitaciones de la demo y dónde está la evidencia.
 
 | Catálogo (ES/EN, filtros, disponibilidad) | Ficha del curso (SEO, JSON-LD) | Móvil |
 |---|---|---|
@@ -37,9 +39,10 @@ flowchart LR
 | 7 Notificaciones + QR · 9 Worker asíncrono | ✅ (WhatsApp y función exacta del QR: pendientes del cliente) |
 | 8 Frontend (i18n, SEO, a11y, admin) · 12 Tests (unit/integración/E2E) | ✅ |
 | 10 Telemetría (OpenTelemetry: trazas + métricas + logs con `trace_id`) · 11 Pipeline de analítica | ✅ (verificado hasta Tempo/Prometheus) |
-| 15 Asistente IA | 🟡 capa de herramientas de solo lectura lista y probada; **falta integrar el modelo** ([ADR-0007](docs/adr/0007-asistente-ia.md)) |
+| 15 Asistente IA | ✅ implementado (Claude, herramientas de solo lectura, límites de uso) y **desactivado por decisión del cliente**: se activa solo con `ANTHROPIC_API_KEY` ([ADR-0007](docs/adr/0007-asistente-ia.md)) |
 | 14 CI | ✅ **en verde en GitHub** (backend, frontend, seguridad y Docker) |
-| 16 Despliegue en Render (`render.yaml`, probado simulándolo en local) | ✅ listo para desplegar: [docs/despliegue.md](docs/despliegue.md) |
+| 16 Despliegue en Render (`render.yaml`) | ✅ **desplegado** (demo arriba): [docs/despliegue.md](docs/despliegue.md) |
+| Administración de cursos: crear y **editar** (textos ES/EN, fecha, capacidad, precio y foto con vista previa) · precios en pesos colombianos (`COP 180.000`) | ✅ |
 | 13 Rendimiento medido y optimizado (Lighthouse móvil: portada 94, catálogo 99, accesibilidad 100) | ✅ [docs/rendimiento.md](docs/rendimiento.md) |
 | Dominio propio · pagos y correo reales · fotos alojadas en el proyecto | ⏳ pendientes |
 
@@ -95,10 +98,10 @@ Ver [`.env.example`](.env.example). Nunca subas `.env`. `JWT_SECRET` y `PAYMENT_
 
 ```bash
 docker compose up -d db
-cd backend  && POSTGRES_HOST=localhost uv run pytest --cov=app   # 158 tests, ~94 % cobertura (PostgreSQL real)
+cd backend  && POSTGRES_HOST=localhost uv run pytest --cov=app   # 205 tests, 94 % cobertura (PostgreSQL real)
             && uv run ruff check . && uv run mypy app
 cd frontend && npm run lint && npm run typecheck && npm test      # unit + i18n
-            && npm run e2e                                         # 11 pruebas en navegador; requiere el stack levantado y un admin (ver e2e/)
+            && npm run e2e                                         # 15 pruebas en navegador; requiere el stack levantado y un admin (ver e2e/)
 ```
 E2E: `E2E_ADMIN_EMAIL` / `E2E_ADMIN_PASSWORD` apuntan a un usuario con rol ADMIN; `npx playwright install chromium` la primera vez.
 

@@ -578,7 +578,7 @@ Con tu "aprobado" siguiente paso: **HITO 1** presentado con la plantilla del pun
 | Accesibilidad | WCAG 2.2 AA en los flujos principales | ✅ axe: 0 violaciones graves en 6 páginas públicas y en el chat; Lighthouse 100. (No se hizo revisión manual con lector de pantalla) |
 | Escalabilidad | 10× la carga estimada sin reescribir | ❓ **no probada** (no hay prueba de carga) |
 | Recuperación | RPO ≤ 24 h, RTO ≤ 4 h | 🟡 `scripts/backup.sh` y `scripts/restore-check.sh` con simulacro de restauración ejecutado una vez; **no hay copias automáticas** |
-| Testabilidad | ≥ 80 % de cobertura; casos críticos cubiertos | ✅ **94 %** de cobertura en backend (188 tests, con PostgreSQL real); 23 tests unitarios de frontend; 14 pruebas E2E de navegador. Los 15 casos críticos de la sección 34 tienen test |
+| Testabilidad | ≥ 80 % de cobertura; casos críticos cubiertos | ✅ **94 %** de cobertura en backend (205 tests, con PostgreSQL real); 26 tests unitarios de frontend; 15 pruebas E2E de navegador. Los 15 casos críticos de la sección 34 tienen test |
 
 ## A.4 Lo que sigue pendiente
 - **Del cliente (sin cambios):** las 18 preguntas de la sección 12 (proveedor de pagos, quién recibe el 20 %, reembolsos, QR/WhatsApp, grabaciones, textos legales…). Con ellas se conectarían pagos y correo reales.

@@ -300,7 +300,93 @@
     "editCourse": "Editar curso",
     "saveChanges": "Guardar cambios",
     "saved": "Cambios guardados. Ya se ven en la web.",
-    "loadingCourse": "Cargando el curso…"
+    "loadingCourse": "Cargando el curso…",
+    "provider": "Proveedor",
+    "refund": "Reembolsar",
+    "roles": "Roles",
+    "system": "Sistema",
+    "yes": "Sí",
+    "no": "No",
+    "changedValue": "modificada",
+    "auditCols": {
+      "action": "Acción",
+      "resource": "Elemento",
+      "actor": "Quién",
+      "changes": "Detalle"
+    },
+    "auditActions": {
+      "course_created": "Curso creado",
+      "course_updated": "Curso editado",
+      "course_cancelled": "Curso cancelado",
+      "payment_status_changed": "Cambio de estado del pago",
+      "payment_refunded": "Pago reembolsado",
+      "user_anonymized": "Cuenta eliminada (datos anonimizados)",
+      "auth_password_reset": "Contraseña restablecida",
+      "booking_checked_in": "Asistencia registrada",
+      "category_created": "Categoría creada",
+      "venue_created": "Sede creada",
+      "permission_admin_granted": "Permiso de administrador concedido",
+      "permission_admin_revoked": "Permiso de administrador retirado",
+      "settings_commission_changed": "Comisión modificada",
+      "booking_approved": "Reserva aprobada",
+      "booking_rejected": "Reserva rechazada",
+      "booking_cancelled": "Reserva cancelada"
+    },
+    "auditResources": {
+      "course": "Curso",
+      "payment": "Pago",
+      "booking": "Reserva",
+      "user": "Usuario",
+      "category": "Categoría",
+      "venue": "Sede",
+      "settings": "Ajustes"
+    },
+    "auditFields": {
+      "category_id": "Categoría",
+      "venue_id": "Sede",
+      "starts_at": "Inicio",
+      "ends_at": "Fin",
+      "capacity": "Capacidad",
+      "price_minor": "Precio",
+      "requires_approval": "Requiere aprobación",
+      "is_recorded": "Se grabará",
+      "cover_image_url": "Foto",
+      "cover_image_alt": "Descripción de la foto",
+      "recording_url": "Enlace de la grabación",
+      "recording_status": "Estado de la grabación",
+      "translations": "Idiomas editados",
+      "bookings_cancelled": "Reservas canceladas",
+      "provider": "Proveedor",
+      "reason": "Motivo indicado",
+      "from": "Antes",
+      "to": "Ahora",
+      "commission_bps": "Comisión (puntos básicos)"
+    },
+    "paymentStatus": {
+      "PENDING": "Pendiente",
+      "PROCESSING": "Procesando",
+      "PAID": "Pagado",
+      "FAILED": "Fallido",
+      "CANCELLED": "Cancelado",
+      "REFUNDED": "Reembolsado"
+    },
+    "commissionStatus": {
+      "ACCRUED": "Acumulada",
+      "SETTLED": "Liquidada",
+      "REVERSED": "Revertida"
+    },
+    "courseStatus": {
+      "DRAFT": "Borrador",
+      "ACTIVE": "Activo",
+      "INACTIVE": "Desactivado",
+      "CANCELLED": "Cancelado"
+    },
+    "roleNames": {
+      "CLIENT": "Cliente",
+      "ADMIN": "Administrador",
+      "OWNER": "Propietario",
+      "INSTRUCTOR": "Instructor"
+    }
   },
   "faq": {
     "title": "Preguntas frecuentes",
